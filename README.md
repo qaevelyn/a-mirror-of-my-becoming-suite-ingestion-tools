@@ -66,6 +66,6 @@ exploit.
 
 ## Author
 
-Evelyn Caro — [qaevelyn.github.io](https://qaevelyn.github.io) —
+Evelyn — [qaevelyn.github.io](https://qaevelyn.github.io) —
 sovereign AI builder, independent journalist. The corpus is public; the record
 of its errors is too.
