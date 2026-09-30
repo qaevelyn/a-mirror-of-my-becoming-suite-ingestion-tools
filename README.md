@@ -1,4 +1,4 @@
-# Mirror Ingest Suite
+# A Mirror of My Becoming — Suite: Ingestion Tools
 
 **Battle-tested, not beta-tested.**
 
