@@ -140,7 +140,7 @@ def chunk_text(text, max_chars=1500, overlap=150):
     return [c for c in chunks if c]
 
 # --------------------------------------------------------------------LOAD--
-def upsert_chunks(collection, msg_id, canonical, doc, meta):
+def upsert_chunks(collection, msg_id, canonical, doc, meta, embed_fn=None):
     """Chroma upsert: deterministic ids, metadata per chunk, i-th chunk indexing
     mirrors suite convention (chunk_index, total_chunks)."""
     chunks = chunk_text(doc)
@@ -153,7 +153,11 @@ def upsert_chunks(collection, msg_id, canonical, doc, meta):
         m["total_chunks"] = total
         docs.append(ch)
         metas.append(m)
-    collection.upsert(ids=ids, documents=docs, metadatas=metas)
+    if embed_fn:
+        vectors = embed_fn.embed_documents(docs)
+        collection.upsert(ids=ids, documents=docs, metadatas=metas, embeddings=vectors)
+    else:
+        collection.upsert(ids=ids, documents=docs, metadatas=metas)
     return total
 
 def stamp_embedded(db_path, row_ids, gen):
@@ -185,6 +189,11 @@ def main():
     a = ap.parse_args()
 
     import chromadb
+    embed_fn = None
+    if a.embed_model:
+        from langchain_ollama import OllamaEmbeddings
+        embed_fn = OllamaEmbeddings(model=a.embed_model)
+        print(f"[EMBED] using {a.embed_model} via Ollama — same model as ships 2/3/5", flush=True)
     client = chromadb.PersistentClient(path=a.store)
     collection = client.get_or_create_collection(a.collection)
 
@@ -215,7 +224,7 @@ def main():
                       f"date={meta['occurred_at']} len={len(doc)}", flush=True)
                 stamped_ids.append(r["id"])
                 continue
-            n = upsert_chunks(collection, r["id"], canon, doc, meta)
+            n = upsert_chunks(collection, r["id"], canon, doc, meta, embed_fn)
             chunk_total += n
             stamped_ids.append(r["id"])
             if a.heartbeats:
