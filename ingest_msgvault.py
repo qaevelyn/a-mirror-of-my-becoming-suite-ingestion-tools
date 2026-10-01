@@ -16,6 +16,7 @@ Usage:
 """
 
 import argparse
+import os
 import hashlib
 import html
 import json
@@ -172,13 +173,15 @@ def get_or_make_gen(db_path):
 # --------------------------------------------------------------------MAIN--
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--db", default="~/.msgvault/msgvault.db")
+    ap.add_argument("--db", default=os.path.expanduser("~/.msgvault/msgvault.db"))
     ap.add_argument("--store", required=True, help="Chroma PersistentClient path")
     ap.add_argument("--collection", default="mirror_food_emails")
     ap.add_argument("--batch", type=int, default=200)
     ap.add_argument("--limit", type=int, default=0, help="max messages this run (0=all)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--heartbeats", action="store_true", help="per-chunk log lines (watchdog-safe)")
+    ap.add_argument("--curfew", default=None, help="stop cleanly at HH:MM local time (stamp + exit; no restart)")
+    ap.add_argument("--embed-model", default=None, help="sentence-transformers model name; omit = text-only store")
     a = ap.parse_args()
 
     import chromadb
@@ -191,6 +194,11 @@ def main():
           f"store={a.store} collection={a.collection} dry_run={a.dry_run}", flush=True)
 
     while True:
+        if a.curfew:
+            now = datetime.now().strftime("%H:%M")
+            if now >= a.curfew:
+                print(f"[CURFEW] {now} >= {a.curfew} — progress stamped, exiting cleanly. Resume anytime; watermark holds.", flush=True)
+                break
         batch = fetch_batch(a.db, a.batch, done)
         if not batch:
             break
