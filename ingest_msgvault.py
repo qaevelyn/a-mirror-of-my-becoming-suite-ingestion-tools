@@ -233,6 +233,9 @@ def main():
                 break
         if not a.dry_run and stamped_ids:
             stamp_embedded(a.db, stamped_ids, gen)
+        if a.dry_run:
+            print("[DRY-DONE] dry-run inspects one batch only — nothing stamped, nothing looped", flush=True)
+            break
         processed += len(stamped_ids)
         print(f"[BATCH] processed={processed} chunks={chunk_total} "
               f"elapsed={time.time()-t0:.0f}s", flush=True)
