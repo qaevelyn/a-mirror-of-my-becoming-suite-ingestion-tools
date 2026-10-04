@@ -1,4 +1,4 @@
-# A Mirror of My Becoming — Suite: Ingestion Tools
+# A Mirror of My Becoming™ — Suite: Ingestion Tools
 
 **Battle-tested, not beta-tested.**
 
@@ -81,3 +81,5 @@ LAUNCH PATTERNS (owner schedule, 2026-09-30):
 - Mon/Tue/Thu/Fri nights: nohup python3 ingest_msgvault.py --db ~/.msgvault/msgvault.db --store <store> --collection mirror_food_emails --embed-model nomic-embed-text --heartbeats --curfew 08:00 &
 - Wed/weekend nights: same command WITHOUT --curfew (runs 24h).
 - Never self-restarts. Progress stamped every batch; resume = relaunch.
+
+Free does not mean free to exploit. If you build a product on this work, the author expects to be paid.
