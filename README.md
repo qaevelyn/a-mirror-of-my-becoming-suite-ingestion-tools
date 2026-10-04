@@ -72,7 +72,7 @@ of its errors is too.
 
 ## Ship 7 — msgvault ingest adapter (ingest_msgvault.py)
 
-Ship 7 of the A Mirror of My Becoming fleet. Reads msgvault.db (SQLite mail
+Ship 7 of the A Mirror of My Becoming™ fleet. Reads msgvault.db (SQLite mail
 archive, embed_gen watermark native), normalizes RFC 5322 message-ids,
 preserves full metadata, feeds the canonical Chroma store with deterministic
 ids + nomic-embed-text vectors (same model as ships 2/3/5 — no new downloads).
