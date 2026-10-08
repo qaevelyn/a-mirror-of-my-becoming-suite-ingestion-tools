@@ -63,7 +63,9 @@ def embed(text):
     r.raise_for_status()
     return r.json()["embedding"]
 
-def chunk(text, size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
+def chunk(text, size=None, overlap=None):
+    size = size if size is not None else CHUNK_SIZE
+    overlap = overlap if overlap is not None else CHUNK_OVERLAP
     if len(text) <= size:
         return [text]
     out = []
