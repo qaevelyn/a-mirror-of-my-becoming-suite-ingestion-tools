@@ -3,27 +3,9 @@
 import os, sys, json, logging, glob, subprocess, tempfile
 import requests
 
-HOME = os.path.expanduser("~")
-FOOD = os.path.join(HOME, "Mirror-Food")
-EXPORT_DIR = os.path.join(FOOD, "deepseek-export")
-VECTOR_STORE = os.path.join(FOOD, "vector-store-v2")
-LOG_FILE = os.path.join(FOOD, "ingest", "deepseek-ingest.log")
-SIDECAR = os.path.join(FOOD, "ingest", "ingested_ids.json")
-COLLECTION = "deepseek_conversations"
-OLLAMA_URL = "http://localhost:11434"
-EMBED_MODEL = "nomic-embed-text"
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 100
-LOCK_FILE = os.path.join(FOOD, "ingest", ".ingest-lock")
+DEFAULT_FOOD = os.path.expanduser("~/Mirror-Food")
 CHILD = os.path.join(os.path.dirname(os.path.abspath(__file__)), "add_child.py")
-WRITE_TIMEOUT = 240
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler(LOG_FILE),
-              logging.StreamHandler(sys.stdout)],
-)
 logger = logging.getLogger("deepseek-ingest")
 
 def acquire_lock():
@@ -155,7 +137,7 @@ def isolated_write(ids, docs, metas, embs):
     tmp.close()
     try:
         r = subprocess.run(
-            ["/usr/local/Caskroom/miniconda/base/bin/python3",
+            [sys.executable,
              CHILD, tmp.name],
             capture_output=True, text=True, timeout=WRITE_TIMEOUT)
         ok = (r.returncode == 0 and "ADDED" in r.stdout)
@@ -171,6 +153,30 @@ def isolated_write(ids, docs, metas, embs):
         os.unlink(tmp.name)
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser(description="Scribe: DeepSeek export -> local Chroma vector store")
+    ap.add_argument("--export-dir", default=os.path.join(DEFAULT_FOOD, "deepseek-export"))
+    ap.add_argument("--store", default=os.path.join(DEFAULT_FOOD, "vector-store-v2"))
+    ap.add_argument("--log-dir", default=os.path.join(DEFAULT_FOOD, "ingest"))
+    ap.add_argument("--collection", default="deepseek_conversations")
+    ap.add_argument("--ollama-url", default="http://localhost:11434")
+    ap.add_argument("--embed-model", default="nomic-embed-text")
+    ap.add_argument("--chunk-size", type=int, default=1000)
+    ap.add_argument("--chunk-overlap", type=int, default=100)
+    ap.add_argument("--write-timeout", type=int, default=240)
+    a = ap.parse_args()
+    global EXPORT_DIR, VECTOR_STORE, LOG_FILE, SIDECAR, COLLECTION, OLLAMA_URL, EMBED_MODEL, CHUNK_SIZE, CHUNK_OVERLAP, WRITE_TIMEOUT, LOCK_FILE
+    EXPORT_DIR, VECTOR_STORE, COLLECTION, OLLAMA_URL, EMBED_MODEL = a.export_dir, a.store, a.collection, a.ollama_url, a.embed_model
+    CHUNK_SIZE, CHUNK_OVERLAP, WRITE_TIMEOUT = a.chunk_size, a.chunk_overlap, a.write_timeout
+    os.makedirs(a.log_dir, exist_ok=True)
+    LOG_FILE = os.path.join(a.log_dir, "deepseek-ingest.log")
+    SIDECAR = os.path.join(a.log_dir, "ingested_ids.json")
+    LOCK_FILE = os.path.join(a.log_dir, ".ingest-lock")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler(sys.stdout)],
+    )
     logger.info("=== INGEST v5 START (pid "
                 + str(os.getpid()) + ") ===")
     acquire_lock()
