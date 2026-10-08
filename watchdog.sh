@@ -1,20 +1,19 @@
 #!/bin/bash
-# Watchdog: restarts ingest_msgvault if it dies.
-# Sleep 300s. Skip if idle marker present.
-
+# Warden — guards Scribe (ingest_deepseek.py). Restart on death; respect idle marker.
+WORK_DIR="${MIRROR_INGEST_DIR:-$HOME/Mirror-Food/ingest}"
+LOG="$WORK_DIR/warden.log"
+mkdir -p "$WORK_DIR" "$HOME/logs"
 while true; do
-    if ! pgrep -f "ingest_msgvault.py" > /dev/null; then
-        if [ -f ~/Mirror-Food/ingest/.ingest-idle ]; then
-            # Script exited because there was nothing to do. Wait longer.
-            sleep 1800
-            continue
+    if ! pgrep -f "ingest_deepseek.py" > /dev/null; then
+        if [ -f "$WORK_DIR/.ingest-idle" ]; then
+            sleep 1800; continue
         fi
-        echo "$(date): Ingest not running. Restarting..." >> ~/logs/ingest-watchdog.log
+        echo "$(date): Scribe not running. Restarting..." >> "$LOG"
         if pgrep ollama > /dev/null; then
-            nohup caffeinate -i python3 ~/Mirror-Food/ingest/ingest_msgvault.py >> ~/Mirror-Food/ingest/full-run.log 2>&1 &
-            echo "$(date): Restarted PID $!" >> ~/logs/ingest-watchdog.log
+            nohup caffeinate -i python3 "$WORK_DIR/ingest_deepseek.py" >> "$WORK_DIR/full-run.log" 2>&1 &
+            echo "$(date): Restarted PID $!" >> "$LOG"
         else
-            echo "$(date): Ollama down. Skipping restart." >> ~/logs/ingest-watchdog.log
+            echo "$(date): Ollama down. Skipping restart." >> "$LOG"
         fi
     fi
     sleep 300
