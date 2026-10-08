@@ -1,0 +1,2 @@
+# msgvault adapter (Ship 7 standalone repo) uses:
+# chromadb, langchain, langchain-ollama — pin to your tested versions there

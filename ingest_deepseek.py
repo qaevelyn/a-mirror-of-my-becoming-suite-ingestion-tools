@@ -15,7 +15,7 @@ EMBED_MODEL = "nomic-embed-text"
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 100
 LOCK_FILE = os.path.join(FOOD, "ingest", ".ingest-lock")
-CHILD = os.path.join(FOOD, "ingest", "add_child.py")
+CHILD = os.path.join(os.path.dirname(os.path.abspath(__file__)), "add_child.py")
 WRITE_TIMEOUT = 240
 
 logging.basicConfig(

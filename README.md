@@ -48,6 +48,10 @@ not a systems failure, and the author's own records were corrected for
 counting restarts instead of completions. A record that hides its own errors
 is publicity, not documentation.
 
+## The Three Components — Scribe, Warden, Hand
+
+The suite names its components: **Scribe** (the ingest engine, `ingest_deepseek.py`) writes the record; **Warden** (`watchdog.sh`) guards the run; **Hand** (`add_child.py`) makes each write in isolation. The formal instruction document ships with the parent index.
+
 ## Quickstart
 
     # 1. Requirements: python3, ollama running with an embedding model, chromadb
